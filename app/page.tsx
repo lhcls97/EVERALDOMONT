@@ -28,13 +28,16 @@ export default function Home(){
     els.forEach(e=>io.observe(e));
     let raf=0;
     const move=()=>{raf=0;const y=scrollY;document.documentElement.style.setProperty("--scroll",String(y));document.querySelectorAll<HTMLElement>("[data-speed]").forEach(el=>{const r=el.parentElement?.getBoundingClientRect();if(!r)return;const speed=Number(el.dataset.speed||0);el.style.transform=`translate3d(0,${(r.top-innerHeight/2)*speed}px,0)`})};
-    const onScroll=()=>{if(!raf)raf=requestAnimationFrame(()=>{move();const max=document.documentElement.scrollHeight-innerHeight;document.documentElement.style.setProperty("--progress",max?String(scrollY/max):"0")})};
+    const onScroll=()=>{if(!raf)raf=requestAnimationFrame(()=>{move();const max=document.documentElement.scrollHeight-innerHeight;document.documentElement.style.setProperty("--progress",max?String(scrollY/max):"0");document.querySelector(".header")?.classList.toggle("is-scrolled",scrollY>50)})};
     const onPointer=(e:PointerEvent)=>{document.documentElement.style.setProperty("--mx",e.clientX+"px");document.documentElement.style.setProperty("--my",e.clientY+"px")};
     const magnetic=[...document.querySelectorAll<HTMLElement>(".cta,.wa-float")];
     const enterMag=(e:PointerEvent)=>{const el=e.currentTarget as HTMLElement;const r=el.getBoundingClientRect();el.style.setProperty("--tx",((e.clientX-r.left-r.width/2)*.12)+"px");el.style.setProperty("--ty",((e.clientY-r.top-r.height/2)*.12)+"px")};
     const leaveMag=(e:PointerEvent)=>{const el=e.currentTarget as HTMLElement;el.style.setProperty("--tx","0px");el.style.setProperty("--ty","0px")};
-    addEventListener("scroll",onScroll,{passive:true});addEventListener("pointermove",onPointer,{passive:true});magnetic.forEach(el=>{el.addEventListener("pointermove",enterMag);el.addEventListener("pointerleave",leaveMag)});move();onScroll();
-    return()=>{io.disconnect();removeEventListener("scroll",onScroll);removeEventListener("pointermove",onPointer);magnetic.forEach(el=>{el.removeEventListener("pointermove",enterMag);el.removeEventListener("pointerleave",leaveMag)});if(raf)cancelAnimationFrame(raf)}
+    const tilts=[...document.querySelectorAll<HTMLElement>("[data-tilt]")];
+    const tiltMove=(e:PointerEvent)=>{const el=e.currentTarget as HTMLElement;const r=el.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;el.style.setProperty("--rx",`${-y*3.5}deg`);el.style.setProperty("--ry",`${x*4.5}deg`);el.style.setProperty("--px",`${(x+.5)*100}%`);el.style.setProperty("--py",`${(y+.5)*100}%`)};
+    const tiltLeave=(e:PointerEvent)=>{const el=e.currentTarget as HTMLElement;el.style.setProperty("--rx","0deg");el.style.setProperty("--ry","0deg")};
+    addEventListener("scroll",onScroll,{passive:true});addEventListener("pointermove",onPointer,{passive:true});magnetic.forEach(el=>{el.addEventListener("pointermove",enterMag);el.addEventListener("pointerleave",leaveMag)});tilts.forEach(el=>{el.addEventListener("pointermove",tiltMove);el.addEventListener("pointerleave",tiltLeave)});move();onScroll();
+    return()=>{io.disconnect();removeEventListener("scroll",onScroll);removeEventListener("pointermove",onPointer);magnetic.forEach(el=>{el.removeEventListener("pointermove",enterMag);el.removeEventListener("pointerleave",leaveMag)});tilts.forEach(el=>{el.removeEventListener("pointermove",tiltMove);el.removeEventListener("pointerleave",tiltLeave)});if(raf)cancelAnimationFrame(raf)}
   },[]);
 
   return <main>
@@ -61,10 +64,12 @@ export default function Home(){
       <a className="scroll-cue" href="#dor"><span>SCROLL</span><b>↓</b></a>
     </section>
 
+    <div className="kinetic-strip" aria-hidden="true"><div><span>DISCIPLINA</span><i>◆</i><span>ESTRATÉGIA</span><i>◆</i><span>EVOLUÇÃO</span><i>◆</i><span>DISCIPLINA</span><i>◆</i><span>ESTRATÉGIA</span><i>◆</i><span>EVOLUÇÃO</span><i>◆</i></div></div>
+
     <section className="pain section-light" id="dor">
       <div className="section-index">IDENTIFICAÇÃO</div>
       <div className="pain-copy" data-reveal><p className="eyebrow">SEM DIREÇÃO, ESFORÇO VIRA FRUSTRAÇÃO.</p><h2>Seu corpo fala.<br/>O método <i>traduz.</i></h2><p className="lead">Uma estratégia clara conecta o que você faz hoje ao resultado que quer construir amanhã.</p></div>
-      <div className="pain-visual reveal-image" data-reveal><img data-speed=".045" loading="lazy" src="/everaldo-dark.webp" alt="Everaldo Monteiro durante preparação"/></div>
+      <div className="pain-visual reveal-image interactive-frame" data-reveal data-tilt><img data-speed=".045" loading="lazy" src="/everaldo-dark.webp" alt="Everaldo Monteiro durante preparação"/></div>
       <div className="pain-list" data-reveal><div><span className="pain-mark"/><p>Treinar sem saber se está realmente evoluindo.</p></div><div><span className="pain-mark"/><p>Começar dietas impossíveis de manter.</p></div><div><span className="pain-mark"/><p>Perder consistência por falta de acompanhamento.</p></div></div>
     </section>
 
@@ -83,14 +88,23 @@ export default function Home(){
     <section className="results" id="resultados">
       <div className="results-head" data-reveal><div><div className="section-index">AUTORIDADE</div><h2>AUTORIDADE<br/>QUE SE <i>constrói.</i></h2></div><p>O processo é vivido todos os dias. Disciplina, técnica e consistência transformam intenção em resultado.</p></div>
       <div className="gallery">
-        <figure className="wide reveal-image" data-reveal><div><img data-speed=".04" loading="lazy" src="/everaldo-palco.webp" alt="Everaldo Monteiro competindo"/></div><figcaption><span>COMPETIÇÃO</span><b>CLASSIC PHYSIQUE</b></figcaption></figure>
-        <figure className="tall reveal-image" data-reveal><div><img data-speed=".055" loading="lazy" src="/everaldo-trofeus.webp" alt="Everaldo Monteiro com troféus"/></div><figcaption><span>EXPERIÊNCIA REAL</span><b>DISCIPLINA PREMIADA</b></figcaption></figure>
+        <figure className="wide reveal-image interactive-frame" data-reveal data-tilt><div><img data-speed=".04" loading="lazy" src="/everaldo-palco.webp" alt="Everaldo Monteiro competindo"/></div><figcaption><span>COMPETIÇÃO</span><b>CLASSIC PHYSIQUE</b></figcaption></figure>
+        <figure className="tall reveal-image interactive-frame" data-reveal data-tilt><div><img data-speed=".055" loading="lazy" src="/everaldo-trofeus.webp" alt="Everaldo Monteiro com troféus"/></div><figcaption><span>EXPERIÊNCIA REAL</span><b>DISCIPLINA PREMIADA</b></figcaption></figure>
       </div>
     </section>
 
     <section className="about" id="sobre">
-      <div className="about-photo reveal-image" data-reveal><img data-speed=".04" loading="lazy" src="/everaldo-hero.webp" alt="Retrato de Everaldo Monteiro"/></div>
+      <div className="about-photo reveal-image interactive-frame" data-reveal data-tilt><img data-speed=".04" loading="lazy" src="/everaldo-hero.webp" alt="Retrato de Everaldo Monteiro"/></div>
       <div className="about-copy" data-reveal><div className="section-index light">SOBRE</div><p className="eyebrow blue">ATLETA CLASSIC PHYSIQUE</p><h2>EVERALDO<br/><i>MONTEIRO.</i></h2><p>O acompanhamento de quem conhece a alta performance por dentro. Experiência prática para transformar esforço em um plano inteligente, possível e sustentável.</p><a className="instagram" href="https://www.instagram.com/_everaldomonteiro/" target="_blank" rel="noreferrer">@_everaldomonteiro <Arrow/></a></div>
+    </section>
+
+    <section className="manifesto" aria-label="Performance, disciplina e precisão">
+      <div className="manifesto-grid" aria-hidden="true"/>
+      <div className="manifesto-sticky">
+        <p data-reveal>ALTA PERFORMANCE NÃO É ACASO.</p>
+        <h2 data-reveal><span>DISCIPLINA</span><span className="outline">ENCONTRA</span><span className="blue-word">PRECISÃO.</span></h2>
+        <div className="manifesto-line"><i/><small>MÉTODO · CONSTÂNCIA · DIREÇÃO</small></div>
+      </div>
     </section>
 
     <section className="process section-light">
